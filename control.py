@@ -51,13 +51,10 @@ def getIndexCookie():
                'Accept-Encoding': 'gzip, deflate, br', 'Accept-Language': 'zh-CN,zh;q=0.9'}
     # 禁止重定向
     html = requests.get(url, headers=headers, allow_redirects=False)
-    # print(html.headers['Set-Cookie'])
-    # print(html.headers['Set-Cookie'].split("SESSION=")[1].split(";")[0])
     return html.headers['Set-Cookie'].split("SESSION=")[1].split(";")[0]
 
 
 def registerCookie(cookie, phone, smsCode):
-    # 注册cookie？？ 拿到了新cookie
     url = 'https://gw.hntv.tv/uaa/login.do'
     headers = {'Host': 'gw.hntv.tv', 'Connection': 'keep-alive', 'Content-Length': '382', 'Cache-Control': 'max-age=0',
                'Upgrade-Insecure-Requests': '1', 'Origin': 'null', 'Content-Type': 'application/x-www-form-urlencoded',
@@ -183,8 +180,6 @@ def selectOption(options, ans):
     # 答案检索逻辑
     # 1. 先对答案进行精准匹配，匹配成功直接取对应的选项；
     # 2. 若不能精准匹配，将进行答案模糊匹配，相似度>89%计入相似对象列表，遍历完题库取max，如果列表数量为0则说明没这道题，默认选择b
-
-    # options: {'optiona': '工人群众', 'optionb': '民主党派成员', 'optionc': '知识分子'}
     # options: {'optiona': '工人群众   ', 'optionb': '民主党派成员', 'optionc': '知识分子'}
 
     sureAns = []
