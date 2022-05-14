@@ -30,4 +30,3 @@ default)(s));
         applicationId: u
     }
 };
-// console.log(S("18888888888","1234","FSHOW"));
