@@ -253,7 +253,7 @@ if __name__ == '__main__':
     news = json.loads(requests.get(newsUrl).text.replace("\'", "\""))
     print(f"{news['msg']}")
     print(f"当前版本：{version}    最新版本：{news['version']} ({news['updateTime']})\n")
-    phoneNum = input("⚪ 输入答题网站绑定的手机号 ：")
+    phoneNum = input("⚪ 输入答题网站绑定的手机号：")
     cookie = getIndexCookie()  # 页面cookie
     send(phoneNum)  # 发送验证码
     newCookie = registerCookie(cookie, phoneNum, input("⚪ 请输入验证码："))
