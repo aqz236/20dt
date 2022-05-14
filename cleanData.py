@@ -1,6 +1,11 @@
 from fuzzy_que import fuzz
+import requests
+import json
 
-data = {
+userDataType = 'online'  # 默认使用在线题库，若使用本地题库，需要改成local
+
+# 本地题库
+data_local = {
     '2022年，是中国共产党统一战线政策提出____周年。': ['100'],
 
     '中国共产党____决定与其他政党建立“民主的联合战线”。': ['二大'],
@@ -640,6 +645,19 @@ data = {
 
 
 }
+
+# 在线题库
+questionsUrl = 'https://blog-static.cnblogs.com/files/FSHOU/20dt_questionData.js'
+questions = json.loads(requests.get(questionsUrl).text.replace("\'", "\""))
+data_online = questions['data']
+print(f"✔ 题库获取完成 最近更新时间：%s\n" % questions["updatetime"])
+
+if userDataType == 'online':
+    data = data_online
+elif userDataType == 'local':
+    data = data_local
+else:
+    data = 'local'
 
 
 def findAns(title):
