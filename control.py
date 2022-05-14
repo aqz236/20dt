@@ -253,13 +253,6 @@ if __name__ == '__main__':
     news = json.loads(requests.get(newsUrl).text.replace("\'", "\""))
     print(f"{news['msg']}")
     print(f"当前版本：{version}    最新版本：{news['version']} ({news['updateTime']})\n")
-    questionsUrl = 'https://blog-static.cnblogs.com/files/FSHOU/20dt_questionData.js'
-    questions = json.loads(requests.get(questionsUrl).text.replace("\'", "\""))
-
-
-    # print(questions)
-    print(f"✔ 题库获取完成 最近更新时间：%s\n"%questions["updatetime"])
-
     phoneNum = input("⚪ 输入答题网站绑定的手机号 ：")
     cookie = getIndexCookie()  # 页面cookie
     send(phoneNum)  # 发送验证码
