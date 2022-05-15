@@ -7,7 +7,6 @@ from fuzzy_que import fuzz
 import random
 import json
 
-success_sum = 0  # 记录正确答案数量
 
 version = 1.0
 
@@ -51,10 +50,13 @@ def getIndexCookie():
                'Accept-Encoding': 'gzip, deflate, br', 'Accept-Language': 'zh-CN,zh;q=0.9'}
     # 禁止重定向
     html = requests.get(url, headers=headers, allow_redirects=False)
+    # print(html.headers['Set-Cookie'])
+    # print(html.headers['Set-Cookie'].split("SESSION=")[1].split(";")[0])
     return html.headers['Set-Cookie'].split("SESSION=")[1].split(";")[0]
 
 
 def registerCookie(cookie, phone, smsCode):
+    # 注册cookie？？ 拿到了新cookie
     url = 'https://gw.hntv.tv/uaa/login.do'
     headers = {'Host': 'gw.hntv.tv', 'Connection': 'keep-alive', 'Content-Length': '382', 'Cache-Control': 'max-age=0',
                'Upgrade-Insecure-Requests': '1', 'Origin': 'null', 'Content-Type': 'application/x-www-form-urlencoded',
@@ -100,11 +102,7 @@ def getToken(code):
     data = {'code': code, 'grant_type': 'authorization_code', 'client_id': 'bd4859dcd7b141eeb297e2f6b6333cec',
             'client_secret': '26e8cb2fbd284f9daa47123d44e9aa70'}
     res = requests.post(url, headers=headers, cookies=cookies, data=data).json()
-    print(res)
-    if res['code'] == 400:
-        print("❌ 无法通过认证，请确认验证码输入正确，且手机号曾绑定过答题平台")
-    else:
-        return res['access_token']
+    return res['access_token']
 
 
 def createPaper(token):
@@ -122,7 +120,7 @@ def createPaper(token):
         return res['data']['paper_id']
     else:
         print("❌ 无法通过认证，请尝试重新登录")
-        
+
 
 
 def getQues(paperId, token):
@@ -180,6 +178,8 @@ def selectOption(options, ans):
     # 答案检索逻辑
     # 1. 先对答案进行精准匹配，匹配成功直接取对应的选项；
     # 2. 若不能精准匹配，将进行答案模糊匹配，相似度>89%计入相似对象列表，遍历完题库取max，如果列表数量为0则说明没这道题，默认选择b
+
+    # options: {'optiona': '工人群众', 'optionb': '民主党派成员', 'optionc': '知识分子'}
     # options: {'optiona': '工人群众   ', 'optionb': '民主党派成员', 'optionc': '知识分子'}
 
     sureAns = []
@@ -210,7 +210,6 @@ def selectOption(options, ans):
 
 
 def sendAns(token, paperId, quesInfo, reply):
-    global success_sum
     finishTime = random.randrange(6000, 20000, 1)
     url = 'https://nms-general.dianzhenkeji.com/api/mayday/tzbanswer.php?action=each_answer'
     headers = {'Host': 'nms-general.dianzhenkeji.com', 'Connection': 'keep-alive', 'Content-Length': '60',
@@ -240,7 +239,6 @@ def sendAns(token, paperId, quesInfo, reply):
         elif res.json()['data']['result'] == 0:
             # 提交成功且答案正确
             print("✔ 提交成功! ")
-            success_sum += 1
             return 0, "success"
     else:
         # 提交失败
@@ -253,7 +251,12 @@ if __name__ == '__main__':
     news = json.loads(requests.get(newsUrl).text.replace("\'", "\""))
     print(f"{news['msg']}")
     print(f"当前版本：{version}    最新版本：{news['version']} ({news['updateTime']})\n")
-    phoneNum = input("⚪ 输入答题网站绑定的手机号：")
+    # questionsUrl = 'https://blog-static.cnblogs.com/files/FSHOU/20dt_questionData.js'
+    # questions = json.loads(requests.get(questionsUrl).text.replace("\'", "\""))
+    # print(len(questions['data']))
+    # # print(questions)
+    # print(f"✔ 题库获取完成 最近更新时间：%s\n"%questions["updatetime"])
+    phoneNum = input("⚪ 输入答题网站绑定的手机号 ：")
     cookie = getIndexCookie()  # 页面cookie
     send(phoneNum)  # 发送验证码
     newCookie = registerCookie(cookie, phoneNum, input("⚪ 请输入验证码："))
@@ -262,7 +265,6 @@ if __name__ == '__main__':
     paperId = createPaper(token)
     print("生成的paperid:  ", paperId)
     num = 0
-
     while num < 20:
         print("\n" * 2)
         time.sleep(1)
@@ -283,8 +285,7 @@ if __name__ == '__main__':
         elif res[0] == 1:
             # 提交成功但答案错误, 重新提交正确答案
             sendAns(token, paperId, quesInfo, res[1])
-            continue    # 答案矫正后卡死？？为什么  加个continue试试？
+            continue    # 答案矫正后卡死
         num += 1
 
-    print("✔ 答题完毕")
-    print(f"正确率：{20 / success_sum}%")
+    print("✔ 答题结束，来点个小星星吧~\n项目地址：https://github.com/aqz236/20dt")
