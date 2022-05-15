@@ -295,8 +295,20 @@ def main():
             sendAns(token, paperId, quesInfo, res[1])
             continue  # 答案矫正后卡死
         num += 1
+    completion(token)
 
+def completion(token):
+    url = 'https://nms-general.dianzhenkeji.com/api/mayday/tzbanswer.php?action=completion'
+    headers = {'Host': 'nms-general.dianzhenkeji.com', 'Connection': 'keep-alive', 'Content-Length': '0',
+               'Authorization': token,
+               'Origin': 'https://static.hntv.tv',
+               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
+               'content-type': 'application/x-www-form-urlencoded', 'Accept': '*/*', 'Sec-Fetch-Site': 'cross-site',
+               'Sec-Fetch-Mode': 'cors', 'Referer': 'https://static.hntv.tv/total/tzdt/',
+               'Accept-Encoding': 'gzip, deflate, br', 'Accept-Language': 'zh-CN,zh;q=0.9'}
 
+    res = requests.post(url, headers=headers).json()
+    print(res)
 if __name__ == '__main__':
     main()
     if unfindNum >= 3:
