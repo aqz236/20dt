@@ -5,8 +5,9 @@ from fuzzy_que import fuzz
 import random
 import json
 
-
 version = 1.0
+unfindNum = 0
+
 
 def logo():
     print('''  
@@ -29,7 +30,7 @@ def send(phone):
         else:
             print(response['msg'])
     except:
-        print("接口出错，请等待修复")
+        print("❌    接口出错，请等待修复")
     url = 'https://gw.hntv.tv/user/auth/sms/send'
     headers = {'Host': 'gw.hntv.tv', 'Connection': 'keep-alive', 'Content-Length': '239',
                'Accept': 'application/json, text/javascript, */*; q=0.01', 'Origin': 'https://gw.hntv.tv',
@@ -40,10 +41,10 @@ def send(phone):
                'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7'}
     res = requests.post(url, headers=headers, data=str(body)).json()
     if res['code'] == 0:
-        print("✔ 验证码发送成功")
+        print("✔    验证码发送成功")
+
 
 def getIndexCookie():
-
     url = 'https://gw.hntv.tv/uaa/oauth/authorize?response_type=code&client_id=uc_web&login_type=uc_web&redirect_uri=https://uc.hntv.tv/login'
     headers = {'Host': 'gw.hntv.tv', 'Connection': 'keep-alive', 'Upgrade-Insecure-Requests': '1',
                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
@@ -90,8 +91,7 @@ def getCode(newCookie):
         code = res.headers['Location'].split("code=")[1].split("&")[0]
         return code
     except:
-        print("❌ 请确认验证码输入正确，且手机号曾绑定过答题平台")
-
+        print("❌    请确认验证码输入正确，且手机号曾绑定过答题平台")
 
 
 def getToken(code):
@@ -124,8 +124,7 @@ def createPaper(token):
         return res['data']['paper_id']
     else:
         print(res)
-        print("❌ 无法通过认证，请尝试重新登录")
-
+        print("❌     无法通过认证，请尝试重新登录")
 
 
 def getQues(paperId, token):
@@ -243,14 +242,15 @@ def sendAns(token, paperId, quesInfo, reply):
             return 1, ''.join(sorted(ans))
         elif res.json()['data']['result'] == 0:
             # 提交成功且答案正确
-            print("✔ 提交成功! ")
+            print("✔    提交成功! ")
             return 0, "success"
     else:
         # 提交失败
         return -1, "fail"
 
 
-if __name__ == '__main__':
+def main():
+    global unfindNum
     logo()
     newsUrl = 'https://blog-static.cnblogs.com/files/FSHOU/20dt_news.js'
     news = json.loads(requests.get(newsUrl).text.replace("\'", "\""))
@@ -261,25 +261,29 @@ if __name__ == '__main__':
     # print(len(questions['data']))
     # # print(questions)
     # print(f"✔ 题库获取完成 最近更新时间：%s\n"%questions["updatetime"])
-    phoneNum = input("⚪ 输入答题网站绑定的手机号 ：")
+    phoneNum = input("⚪   输入答题网站绑定的手机号 ：")
     cookie = getIndexCookie()  # 页面cookie
     send(phoneNum)  # 发送验证码
-    newCookie = registerCookie(cookie, phoneNum, input("⚪ 请输入验证码："))
+    newCookie = registerCookie(cookie, phoneNum, input("⚪   请输入验证码："))
     code = getCode(newCookie)
     token = getToken(code)
+
     paperId = createPaper(token)
     print("生成的paperid:  ", paperId)
     num = 0
     while num < 20:
         print("\n" * 2)
-        time.sleep(1)
-        print(f"🚕 开始答题 ---- 第 {num + 1} 题")
+        time.sleep(0.5)
+        print(f"[[   开始答题    ----    第 {num + 1} 题")
         quesInfo = getQues(paperId, token)
         if type(quesInfo['data']) != dict:  # 试题获取失败则重新获取
+            print("❌    系统问题导致，没获取到新题，如果一直获取不到，请尝试重新运行程序")
+            unfindNum += 1
+            num += 1
             continue
         showQues(quesInfo)
         reply = findAns(quesInfo)
-        print(f"📃 开始提交第 {num + 1} 题答案 {reply}")
+        print(f"[[   开始提交第 {num + 1} 题答案 {reply}")
         res = sendAns(token, paperId, quesInfo, reply)
         if res[0] == -1:
             # 提交失败
@@ -290,7 +294,15 @@ if __name__ == '__main__':
         elif res[0] == 1:
             # 提交成功但答案错误, 重新提交正确答案
             sendAns(token, paperId, quesInfo, res[1])
-            continue    # 答案矫正后卡死
+            continue  # 答案矫正后卡死
         num += 1
 
-    print("✔ 答题结束，来点个小星星吧~\n项目地址：https://github.com/aqz236/20dt")
+
+if __name__ == '__main__':
+    main()
+    if unfindNum >= 3:
+        print(f"系统原因，有{unfindNum}道题没有生成，尝试重新做一次")
+        unfindNum = 0
+        main()
+    print("✔    答题结束，来点个小星星吧~\n项目地址：https://github.com/aqz236/20dt")
+    text = input("")
