@@ -277,7 +277,7 @@ def main():
         print(f"[[   开始答题    ----    第 {num + 1} 题")
         quesInfo = getQues(paperId, token)
         if type(quesInfo['data']) != dict:  # 试题获取失败则重新获取
-            print("❌    系统问题导致，没获取到新题，如果一直获取不到，请尝试重新运行程序")
+            print("❌    系统问题导致，没获取到新题，可能已经答完了20道题\n如果不是满分，可以将以上所有程序输出复制，发送给作者，完善题库~")
             unfindNum += 1
             num += 1
             continue
