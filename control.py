@@ -7,7 +7,8 @@ import json
 
 version = 1.0
 unfindNum = 0
-
+sureNum = 0     # 答对的数量
+failQuesInfo = []   # 答错的题信息
 
 def logo():
     print('''  
@@ -214,6 +215,7 @@ def selectOption(options, ans):
 
 
 def sendAns(token, paperId, quesInfo, reply):
+    global failQuesInfo, sureNum
     finishTime = random.randrange(6000, 20000, 1)
     url = 'https://nms-general.dianzhenkeji.com/api/mayday/tzbanswer.php?action=each_answer'
     headers = {'Host': 'nms-general.dianzhenkeji.com', 'Connection': 'keep-alive', 'Content-Length': '60',
@@ -233,6 +235,7 @@ def sendAns(token, paperId, quesInfo, reply):
     #           'is_continue': '0'}}
     if res.json()['code'] == 0:
         if res.json()['data']['result'] == 1:
+            failQuesInfo.append(quesInfo)
             # 提交成功但答案错误
             print("===缺失答案矫正===")
             sureAns = res.json()['data']['answer']
@@ -242,6 +245,7 @@ def sendAns(token, paperId, quesInfo, reply):
             return 1, ''.join(sorted(ans))
         elif res.json()['data']['result'] == 0:
             # 提交成功且答案正确
+            sureNum += 1
             print("✔    提交成功! ")
             return 0, "success"
     else:
@@ -256,11 +260,6 @@ def main():
     news = json.loads(requests.get(newsUrl).text.replace("\'", "\""))
     print(f"{news['msg']}")
     print(f"当前版本：{version}    最新版本：{news['version']} ({news['updateTime']})\n")
-    # questionsUrl = 'https://blog-static.cnblogs.com/files/FSHOU/20dt_questionData.js'
-    # questions = json.loads(requests.get(questionsUrl).text.replace("\'", "\""))
-    # print(len(questions['data']))
-    # # print(questions)
-    # print(f"✔ 题库获取完成 最近更新时间：%s\n"%questions["updatetime"])
     phoneNum = input("⚪   输入答题网站绑定的手机号 ：")
     cookie = getIndexCookie()  # 页面cookie
     send(phoneNum)  # 发送验证码
@@ -303,6 +302,11 @@ if __name__ == '__main__':
     if unfindNum >= 3:
         print(f"系统原因，有{unfindNum}道题没有生成，尝试重新做一次")
         unfindNum = 0
+        print("^^^^^^^^^^^^^^^^^^^题库缺失内容^^^^^^^^^^^^^^^^^^^")
+        print(failQuesInfo)
+        print("^^^^^^^^^^^^可将上方区域提供给作者，完善题库^^^^^^^^^^^^")
+        print("正确答对的题目数量：", sureNum)
         main()
+
     print("✔    答题结束，来点个小星星吧~\n项目地址：https://github.com/aqz236/20dt")
     text = input("")
