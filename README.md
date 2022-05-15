@@ -8,6 +8,7 @@
 
 
 * 确保系统上已有Python环境
+* 系统有Nodejs环境
 * 需要在答题平台绑定手机号
 
 执行 <code>python run.py</code>或双击run.exe即可运行
