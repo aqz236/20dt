@@ -119,7 +119,8 @@ def createPaper(token):
     if res['code'] == 0:
         return res['data']['paper_id']
     else:
-        print("❌ 无法通过认证，请尝试重新登录")
+        print(res)
+        # print("❌ 无法通过认证，请尝试重新登录")
 
 
 
