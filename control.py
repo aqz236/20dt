@@ -5,7 +5,7 @@ from fuzzy_que import fuzz
 import random
 import json
 
-version = 1.1
+version = 1.2
 unfindNum = 0
 sureNum = 0     # 答对的数量
 failQuesInfo = []   # 答错的题信息
