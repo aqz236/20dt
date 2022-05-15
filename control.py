@@ -1,5 +1,3 @@
-import execjs
-import os
 import requests
 import cleanData
 import time
@@ -22,10 +20,16 @@ def logo():
 
 
 def send(phone):
-    path = os.path.dirname(__file__)
-    jsDir = path + "/createBody.js"
-    data = execjs.compile(open(jsDir).read()).call('S', phone, "1234", "SAAS")
-
+    data = {'phone': phone}
+    try:
+        response = requests.get('http://gxwljs.xyz:9009/', data=data).json()
+        if response['code'] == 0:
+            body = response['data']
+            print(response['msg'])
+        else:
+            print(response['msg'])
+    except:
+        print("接口出错，请等待修复")
     url = 'https://gw.hntv.tv/user/auth/sms/send'
     headers = {'Host': 'gw.hntv.tv', 'Connection': 'keep-alive', 'Content-Length': '239',
                'Accept': 'application/json, text/javascript, */*; q=0.01', 'Origin': 'https://gw.hntv.tv',
@@ -34,7 +38,7 @@ def send(phone):
                'Content-Type': 'application/json', 'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors',
                'Sec-Fetch-Dest': 'empty', 'Accept-Encoding': 'gzip, deflate, br',
                'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7'}
-    res = requests.post(url, headers=headers, data=str(data)).json()
+    res = requests.post(url, headers=headers, data=str(body)).json()
     if res['code'] == 0:
         print("✔ 验证码发送成功")
 
@@ -120,7 +124,7 @@ def createPaper(token):
         return res['data']['paper_id']
     else:
         print(res)
-        # print("❌ 无法通过认证，请尝试重新登录")
+        print("❌ 无法通过认证，请尝试重新登录")
 
 
 
